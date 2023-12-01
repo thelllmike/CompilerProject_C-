@@ -1,47 +1,37 @@
-#include "include/parser.h"
-#include <include/ir.h>
+#include "parser.h"
+#include <memory>
+#include <vector>
 
-// Example method to parse an expression - a placeholder for now
-Expression* Parser::parseExpression() {
-    // You would implement your expression parsing logic here
-    // For now, we'll just return nullptr for the sake of the example
-    return nullptr;
-}
+// Assuming Token, Program, Statement, and Expression are defined in other headers
+// Include those headers in parser.h or here in parser.cpp
 
-// Method to parse statements
-std::vector<Statement*> Parser::parse() {
-    std::vector<Statement*> statements;
+Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), current(0) {}
+
+std::unique_ptr<Program> Parser::parseProgram() {
+    auto program = std::make_unique<Program>();
     while (!isAtEnd()) {
-        statements.push_back(parseStatement());
+        program->statements.push_back(parseStatement());
     }
-    return statements;
+    return program;
 }
 
-// Method to parse a single statement
-Statement* Parser::parseStatement() {
-    if (match({TokenType::PRINT})) {
-        return parsePrintStatement();
+std::unique_ptr<Statement> Parser::parseStatement() {
+    // Parsing logic for statements
+    // Return a unique_ptr to a Statement object
+}
+
+std::unique_ptr<Expression> Parser::parseExpression() {
+    // Parsing logic for expressions
+    // Return a unique_ptr to an Expression object
+}
+
+bool Parser::match(TokenType type) {
+    if (check(type)) {
+        advance();
+        return true;
     }
-    if (match({TokenType::IDENTIFIER})) {
-        return parseAssignmentStatement();
-    }
-
-    // Handle parsing error: unexpected token
-    throw std::runtime_error("Unexpected token.");
+    return false;
 }
 
-// Placeholder for parsing print statements
-Statement* Parser::parsePrintStatement() {
-    Expression* value = parseExpression();
-    consume(TokenType::SEMICOLON, "Expect ';' after value.");
-    return new PrintStatement(value);
-}
+// Implement other necessary member functions as described earlier
 
-// Placeholder for parsing assignment statements
-Statement* Parser::parseAssignmentStatement() {
-    Token name = previous();
-    consume(TokenType::EQUAL, "Expect '=' after variable name.");
-    Expression* value = parseExpression();
-    consume(TokenType::SEMICOLON, "Expect ';' after expression.");
-    return new AssignmentStatement(name, value);
-}

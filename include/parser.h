@@ -1,59 +1,53 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include "lexer.h"
-#include "ir.h"
-#include <stdexcept>
+#include <memory>
+#include <vector>
+#include "Token.h"      // Include the Token class header file
+#include "Instruction.h" // Include the Instruction class header file
 
 class Parser {
-private:
-    std::vector<Token> tokens;
-    size_t current = 0;
-
-    Token advance() {
-        if (!isAtEnd()) current++;
-        return previous();
-    }
-
-    Token previous() {
-        return tokens[current - 1];
-    }
-
-    bool isAtEnd() {
-        return peek().type == TokenType::END_OF_FILE;
-    }
-
-    Token peek() {
-        return tokens[current];
-    }
-
-    bool check(TokenType type) {
-        if (isAtEnd()) return false;
-        return peek().type == type;
-    }
-
-    bool match(std::initializer_list<TokenType> types) {
-        for (TokenType type : types) {
-            if (check(type)) {
-                advance();
-                return true;
-            }
-        }
-        return false;
-    }
-
-    Token consume(TokenType type, const std::string &message) {
-        if (check(type)) return advance();
-
-        throw std::runtime_error(message);
-    }
-
-    // Recursive descent parsing methods follow...
-
 public:
-    Parser(const std::vector<Token> &tokens) : tokens(tokens) {}
+    // Constructor takes a vector of Tokens
+    Parser(const std::vector<Token>& tokens);
 
-    // Methods to parse different constructs...
+    // Parses the entire program and returns the root node of the instruction list
+    std::unique_ptr<InstructionNode> parseProgram();
+
+private:
+    // Vector of tokens provided by the lexer
+    const std::vector<Token>& tokens;
+
+    // Current position in the tokens vector
+    size_t current;
+
+    // Helper method to check if the end of tokens is reached
+    bool isAtEnd() const;
+
+    // Helper method to return the current token without consuming it
+    const Token& peek() const;
+
+    // Helper method to consume and return the current token, then advance to next
+    const Token& advance();
+
+    // Method to parse an individual statement and return its instruction node
+    std::unique_ptr<InstructionNode> parseStatement();
+
+    // Method to parse an expression and return its instruction node
+    std::unique_ptr<InstructionNode> parseExpression();
+
+    // Methods for parsing different types of statements and expressions
+    std::unique_ptr<InstructionNode> parsePrintStatement();
+    std::unique_ptr<InstructionNode> parseAssignmentStatement();
+    std::unique_ptr<InstructionNode> parseIfStatement();
+    std::unique_ptr<InstructionNode> parseWhileStatement();
+    // ... Other parsing methods for different constructs
+
+    // Utility methods for error handling and checking tokens
+    bool match(TokenType type);
+    bool check(TokenType type) const;
+    void error(const Token& token, const std::string& message);
+    // ... Other utility methods
 };
 
 #endif // PARSER_H
