@@ -1,6 +1,4 @@
-#ifndef IR_H
-#define IR_H
-
+#include <iostream>
 #include <string>
 #include <vector>
 #include <memory>
@@ -9,7 +7,8 @@
 class Expression {
 public:
     virtual ~Expression() = default;
-    // You could add evaluation methods or visitor patterns here
+    virtual int evaluate() const = 0;  // Pure virtual function for evaluation
+    virtual void print() const = 0;    // Pure virtual function for printing
 };
 
 // Expression for integer literals
@@ -18,14 +17,27 @@ public:
     int value;
 
     explicit IntegerLiteral(int value) : value(value) {}
+    int evaluate() const override {
+        return value;
+    }
+    void print() const override {
+        std::cout << value;
+    }
 };
 
-// Expression for variables
+// Expression for variables (assuming you need this)
 class VariableExpression : public Expression {
 public:
     std::string name;
 
     explicit VariableExpression(std::string name) : name(std::move(name)) {}
+    int evaluate() const override {
+        // Implement variable lookup and return its value
+        return 0; // Replace with actual logic
+    }
+    void print() const override {
+        std::cout << name;
+    }
 };
 
 // Binary operation expression
@@ -37,6 +49,25 @@ public:
 
     BinaryOperation(std::unique_ptr<Expression> left, std::unique_ptr<Expression> right, char op)
         : left(std::move(left)), right(std::move(right)), op(op) {}
+    int evaluate() const override {
+        int leftValue = left->evaluate();
+        int rightValue = right->evaluate();
+        switch (op) {
+            case '+': return leftValue + rightValue;
+            case '-': return leftValue - rightValue;
+            case '*': return leftValue * rightValue;
+            case '/': return leftValue / rightValue;
+            default:
+                throw std::runtime_error("Unknown operator");
+        }
+    }
+    void print() const override {
+        std::cout << "(";
+        left->print();
+        std::cout << " " << op << " ";
+        right->print();
+        std::cout << ")";
+    }
 };
 
 // Base class for any IR instruction
@@ -54,6 +85,11 @@ public:
 
     Assignment(std::string variableName, std::unique_ptr<Expression> expression)
         : variableName(std::move(variableName)), expression(std::move(expression)) {}
+    void print() const {
+        std::cout << variableName << " = ";
+        expression->print();
+        std::cout << ";" << std::endl;
+    }
 };
 
 // Print instruction
@@ -63,6 +99,11 @@ public:
 
     explicit Print(std::unique_ptr<Expression> expression)
         : expression(std::move(expression)) {}
+    void print() const {
+        std::cout << "print ";
+        expression->print();
+        std::cout << ";" << std::endl;
+    }
 };
 
 // The entire IR for a program
@@ -74,6 +115,35 @@ public:
     void addInstruction(std::unique_ptr<Instruction> instruction) {
         instructions.push_back(std::move(instruction));
     }
+
+    // Print all instructions in the program
+    void print() const {
+        for (const auto& instruction : instructions) {
+            instruction->print();
+        }
+    }
 };
 
-#endif // IR_H
+int main() {
+    // Create an IR program
+    IRProgram program;
+
+    // Create expressions and instructions
+    std::unique_ptr<Expression> expr1 = std::make_unique<IntegerLiteral>(42);
+    std::unique_ptr<Expression> expr2 = std::make_unique<IntegerLiteral>(7);
+    std::unique_ptr<Expression> expr3 = std::make_unique<BinaryOperation>(
+        std::move(expr1), std::move(expr2), '+'
+    );
+
+    std::unique_ptr<Instruction> assign = std::make_unique<Assignment>("result", std::move(expr3));
+    std::unique_ptr<Instruction> print = std::make_unique<Print>(std::make_unique<VariableExpression>("result"));
+
+    // Add instructions to the program
+    program.addInstruction(std::move(assign));
+    program.addInstruction(std::move(print));
+
+    // Print the entire IR program
+    program.print();
+
+    return 0;
+}
