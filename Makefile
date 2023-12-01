@@ -1,38 +1,33 @@
-# Compiler and Linker
-CXX := g++
-
-# The Target Binary Program
-TARGET := build/CompilerProject
+# Compiler settings
+CXX = g++
+CXXFLAGS = -std=c++17 -Wall
+INCLUDES = -Iinclude
 
 # Directories
-SRCDIR := src
-BUILDDIR := build
-INCDIR := include
+SRC_DIR = src
+BUILD_DIR = build
 
-# Flags, Libraries and Includes
-CXXFLAGS := -std=c++17 -Wall -I$(INCDIR)
-LDFLAGS := 
-LIB := 
+# Source and object files
+SOURCE_FILES = $(wildcard $(SRC_DIR)/*.cpp)
+OBJECT_FILES = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SOURCE_FILES))
 
-# Code Lists
-SOURCES := $(wildcard $(SRCDIR)/*.cpp)
-OBJECTS := $(SOURCES:$(SRCDIR)/%.cpp=$(BUILDDIR)/%.o)
+# Targets
+TARGET = your_program_name
 
-# Default Make
-all: $(TARGET)
+# Build rules
+all: $(BUILD_DIR) $(TARGET)
 
-# Link the executable
-$(TARGET): $(OBJECTS)
-	$(CXX) $^ -o $@ $(LDFLAGS) $(LIB)
+$(TARGET): $(OBJECT_FILES)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@
 
-# Compile the object files
-$(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
-	@mkdir -p $(BUILDDIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
-# Clean Objects
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
 clean:
-	$(RM) -r $(BUILDDIR)
+	rm -rf $(BUILD_DIR)
+	rm -f $(TARGET)
 
-# Non-File Targets
 .PHONY: all clean

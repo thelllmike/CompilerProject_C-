@@ -1,17 +1,19 @@
-// Instruction.h
 #ifndef INSTRUCTION_H
 #define INSTRUCTION_H
 
-#include <memory>
 #include <vector>
+#include <memory>
 
-// Example of an Instruction class
-class Instruction {
+class InstructionNode {
 public:
-    virtual ~Instruction() = default;
-    // Virtual methods for handling instruction behavior
-};
+    // Constructor declaration
+    InstructionNode(std::vector<std::unique_ptr<InstructionNode>> children);
 
-// Derived classes for specific instructions can be added here
+    // Other member functions and variables
+    // ...
+
+private:
+    std::vector<std::unique_ptr<InstructionNode>> children;
+};
 
 #endif // INSTRUCTION_H

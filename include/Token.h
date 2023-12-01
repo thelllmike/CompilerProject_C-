@@ -6,16 +6,16 @@
 
 enum class TokenType {
     INTEGER_LITERAL,
-    PLUS_SIGN,
-    MINUS_SIGN,
-    // ... other token types ...
+    PLUS,
+    MINUS,
+    // ... other token types
+    TOKEN_EOF, // Renamed EOF to avoid conflict
 };
 
 struct Token {
     TokenType type;
-    std::string text;
-
-    Token(TokenType type, const std::string& text) : type(type), text(text) {}
+    std::string lexeme;
+    // ... other token properties
 };
 
 #endif // TOKEN_H

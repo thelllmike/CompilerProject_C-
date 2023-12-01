@@ -1,28 +1,35 @@
 #include "parser.h"
-#include <memory>
-#include <vector>
-
-// Assuming Token, Program, Statement, and Expression are defined in other headers
-// Include those headers in parser.h or here in parser.cpp
+#include "Token.h"
+#include <stdexcept>
 
 Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), current(0) {}
 
-std::unique_ptr<Program> Parser::parseProgram() {
-    auto program = std::make_unique<Program>();
+std::unique_ptr<InstructionNode> Parser::parseProgram() {
+    std::vector<std::unique_ptr<InstructionNode>> instructions;
+
     while (!isAtEnd()) {
-        program->statements.push_back(parseStatement());
+        instructions.push_back(parseStatement());
+        // Handle the case where parsing a statement fails
     }
-    return program;
+
+    return std::make_unique<InstructionNode>(std::move(instructions));
 }
 
-std::unique_ptr<Statement> Parser::parseStatement() {
-    // Parsing logic for statements
-    // Return a unique_ptr to a Statement object
+bool Parser::isAtEnd() const {
+    return peek().type == TokenType::TOKEN_EOF;  // Using the renamed enumerator
 }
 
-std::unique_ptr<Expression> Parser::parseExpression() {
-    // Parsing logic for expressions
-    // Return a unique_ptr to an Expression object
+const Token& Parser::peek() const {
+    return tokens[current];
+}
+
+const Token& Parser::previous() const {
+    return tokens[current - 1];
+}
+
+bool Parser::check(TokenType type) const {
+    if (isAtEnd()) return false;
+    return peek().type == type;
 }
 
 bool Parser::match(TokenType type) {
@@ -33,5 +40,23 @@ bool Parser::match(TokenType type) {
     return false;
 }
 
-// Implement other necessary member functions as described earlier
+void Parser::advance() {
+    if (!isAtEnd()) current++;
+}
 
+void Parser::error(const std::string& message) {
+    // Error handling code
+    throw std::runtime_error(message);
+}
+
+std::unique_ptr<InstructionNode> Parser::parseStatement() {
+    // Implement based on your grammar
+    // Example:
+    // if (match(TokenType::IF)) return parseIfStatement();
+    return nullptr;
+}
+
+std::unique_ptr<InstructionNode> Parser::parseExpression() {
+    // Implement based on your grammar
+    return nullptr;
+}
